@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: php-nginx-app
 spec:
-  replicas: 1
+  replicas: 2
   # 1. Düzeltme: Selector eklenmeli ve label ile eşleşmeli
   selector:
     matchLabels:
