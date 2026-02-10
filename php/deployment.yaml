@@ -39,11 +39,11 @@ spec:
               APP_URL=http://php-app.local
               
               DB_CONNECTION=${DB_CONNECTION}
-              DB_HOST=${DB_HOST}
-              DB_PORT=3306
-              DB_DATABASE=${DB_DATABASE}
-              DB_USERNAME=${DB_USERNAME}
-              DB_PASSWORD=${DB_PASSWORD}
+              #DB_HOST=${DB_HOST}
+              #DB_PORT=3306
+              #DB_DATABASE=${DB_DATABASE}
+              #DB_USERNAME=${DB_USERNAME}
+              #DB_PASSWORD=${DB_PASSWORD}
               
               LOG_CHANNEL=single
               LOG_LEVEL=debug
