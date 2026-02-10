@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-nginx-app
+spec:
+  replicas: 1
+  # 1. Düzeltme: Selector eklenmeli ve label ile eşleşmeli
+  selector:
+    matchLabels:
+      app: php-nginx
+  template:
+    metadata:
+      # 2. Düzeltme: Buradaki label, yukarıdaki selector ile BİREBİR aynı olmalı
+      labels:
+        app: php-nginx
+    spec:
+      initContainers:
+        - name: code-provider
+          image: mahmutbayri/k8s-php-app:v2
+            # Secret içindeki verileri bu konteynere çevre değişkeni olarak yüklüyoruz
+          envFrom:
+            - secretRef:
+                name: laravel-env-secret
+          command: ["sh", "-c"]
+          args:
+            - |
+              # 1. Önce kodları kopyala
+              echo "Kodlar kopyalanıyor..."
+              cp -rp /var/www/html/. /common-storage/
+              
+              # 2. .env dosyasını oluştur (Environment variables kullanarak)
+              # 'EOF' bloğu arasındaki her şey .env dosyasına yazılacak
+              echo "Dinamik .env dosyası oluşturuluyor..."
+              cat <<EOF > /common-storage/.env
+              APP_NAME=LaravelApp
+              APP_ENV=local
+              APP_KEY=${APP_KEY}
+              APP_DEBUG=${APP_DEBUG}
+              APP_URL=http://php-app.local
+              
+              DB_CONNECTION=${DB_CONNECTION}
+              DB_HOST=${DB_HOST}
+              DB_PORT=3306
+              DB_DATABASE=${DB_DATABASE}
+              DB_USERNAME=${DB_USERNAME}
+              DB_PASSWORD=${DB_PASSWORD}
+              
+              LOG_CHANNEL=single
+              LOG_LEVEL=debug
+              EOF
+              
+              # 3. İzinleri ayarla (PHP konteyneri okuyabilsin)
+              chown www-data:www-data /common-storage/.env
+              echo ".env dosyası başarıyla hazırlandı."
+          volumeMounts:
+            - name: shared-code
+              mountPath: /common-storage
+      containers:
+        - name: php-fpm
+          image: mahmutbayri/k8s-php-app:v2
+          volumeMounts:
+            - name: shared-code
+              mountPath: /var/www/html
+            - name: log-volume
+              mountPath: /var/www/html/logs
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: shared-code
+              mountPath: /var/www/html
+            - name: nginx-config-volume
+              mountPath: /etc/nginx/conf.d
+            - name: log-volume
+              mountPath: /var/www/html/logs
+      volumes:
+        - name: shared-code
+          emptyDir: {}
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-config
+        - name: log-volume
+          persistentVolumeClaim:
+            claimName: php-log-pvc

@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: php-log-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: manual # 1. Buraya özel bir sınıf ismi ver
+  hostPath:
+    path: /Users/mahmutbayri/Code/personel/helm-k8s-argo/php-k8s-argocd/project/logs
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: php-log-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: manual # 2. PVC de özellikle bu sınıfı istesin
+  resources:
+    requests:
+      storage: 1Gi
