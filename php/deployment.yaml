@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: php-nginx-app
 spec:
-  replicas: 2
+  replicas: 1
   # 1. Düzeltme: Selector eklenmeli ve label ile eşleşmeli
   selector:
     matchLabels:
@@ -16,7 +16,7 @@ spec:
     spec:
       initContainers:
         - name: code-provider
-          image: mahmutbayri/k8s-php-app:v2
+          image: mahmutbayri/k8s-php-app:v3
             # Secret içindeki verileri bu konteynere çevre değişkeni olarak yüklüyoruz
           envFrom:
             - secretRef:
@@ -57,7 +57,7 @@ spec:
               mountPath: /common-storage
       containers:
         - name: php-fpm
-          image: mahmutbayri/k8s-php-app:v2
+          image: mahmutbayri/k8s-php-app:v3
           volumeMounts:
             - name: shared-code
               mountPath: /var/www/html
